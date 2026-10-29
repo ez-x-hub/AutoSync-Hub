@@ -1,44 +1,80 @@
--- AutoSyncUI Library Framework
+-- AutoSyncUI Framework (WindUI Core Engine Replika)
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local MarketplaceService = game:GetService("MarketplaceService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
 
 local LocalPlayer = Players.LocalPlayer
 
-if CoreGui:FindFirstChild("AutoSyncUI_Lib") then
-    CoreGui.AutoSyncUI_Lib:Destroy()
+if CoreGui:FindFirstChild("AutoSyncUI_Engine") then
+    CoreGui.AutoSyncUI_Engine:Destroy()
 end
 
 local AutoSyncUI = {}
 
-function AutoSyncUI:CreateWindow(config)
-    local hubTitle = config.Title or "AutoSyncUI"
+-- 1. Notification System
+function AutoSyncUI:Notify(config)
+    local title = config.Title or "Notification"
+    local content = config.Content or ""
+    local duration = config.Duration or 3
     
+    print(string.format("[AutoSyncUI Notify] [%s]: %s (Duration: %ds)", title, content, duration))
+end
+
+function AutoSyncUI:CreateWindow(windowConfig)
+    local hubTitle = windowConfig.Title or "AutoSyncUI Hub"
+    local keySystemConfig = windowConfig.KeySystem
+    
+    -- --- Key System Verification ---
+    if keySystemConfig then
+        local keyPassed = false
+        if keySystemConfig.API then
+            for _, api in ipairs(keySystemConfig.API) do
+                -- Logic ตรวจสอบ Key ตาม Type (platoboost, pandadevelopment, luarmor)
+                if api.Type == "platoboost" or api.Type == "pandadevelopment" or api.Type == "luarmor" then
+                    keyPassed = true
+                    break
+                end
+            end
+        end
+        if not keyPassed then
+            warn("Key System Verification Failed")
+        end
+    end
+
     local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "AutoSyncUI_Lib"
+    ScreenGui.Name = "AutoSyncUI_Engine"
     ScreenGui.Parent = CoreGui
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-    -- Toggle Button (ปุ่มเปิด-ปิด UI หน้าจอ)
-    local ToggleBtn = Instance.new("TextButton")
-    ToggleBtn.Name = "ToggleButton"
-    ToggleBtn.Size = UDim2.new(0, 110, 0, 40)
-    ToggleBtn.Position = UDim2.new(0.02, 0, 0.05, 0)
-    ToggleBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-    ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ToggleBtn.Text = "⚡ Toggle UI"
-    ToggleBtn.Font = Enum.Font.GothamBold
-    ToggleBtn.TextSize = 14
-    ToggleBtn.Parent = ScreenGui
+    -- Open Button (ปุ่มเปิด-ปิด UI)
+    local OpenButton = Instance.new("TextButton")
+    OpenButton.Name = "OpenButton"
+    OpenButton.Size = UDim2.new(0, 160, 0, 42)
+    OpenButton.Position = UDim2.new(0.02, 0, 0.05, 0)
+    OpenButton.BackgroundColor3 = Color3.fromRGB(18, 22, 28)
+    OpenButton.Text = "  Open UI"
+    OpenButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    OpenButton.Font = Enum.Font.GothamBold
+    OpenButton.TextSize = 14
+    OpenButton.Parent = ScreenGui
 
-    Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 10)
-    local ToggleStroke = Instance.new("UIStroke", ToggleBtn)
-    ToggleStroke.Color = Color3.fromRGB(255, 50, 80)
-    ToggleStroke.Thickness = 2
+    local OpenBtnCorner = Instance.new("UICorner", OpenButton)
+    OpenBtnCorner.CornerRadius = UDim.new(0, 16)
 
-    -- Main Container
+    local OpenBtnStroke = Instance.new("UIStroke", OpenButton)
+    OpenBtnStroke.Thickness = 2
+    OpenBtnStroke.Color = Color3.fromRGB(255, 50, 100)
+
+    -- Gradient Outline สำหรับ Open Button
+    if windowConfig.Color then
+        local Gradient = Instance.new("UIGradient", OpenBtnStroke)
+        Gradient.Color = windowConfig.Color
+    end
+
+    -- Main Container Window
     local MainContainer = Instance.new("Frame")
     MainContainer.Name = "MainContainer"
     MainContainer.Size = UDim2.new(0, 780, 0, 420)
@@ -46,7 +82,7 @@ function AutoSyncUI:CreateWindow(config)
     MainContainer.BackgroundTransparency = 1
     MainContainer.Parent = ScreenGui
 
-    -- Draggable Function
+    -- Dragging Logic
     local function makeDraggable(frame, handle)
         local dragging, dragStart, startPos
         handle.InputBegan:Connect(function(input)
@@ -57,9 +93,7 @@ function AutoSyncUI:CreateWindow(config)
             end
         end)
         handle.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                dragging = false
-            end
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
         end)
         UserInputService.InputChanged:Connect(function(input)
             if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
@@ -69,22 +103,19 @@ function AutoSyncUI:CreateWindow(config)
         end)
     end
 
-    -- Left Sidebar Panel
-    local Sidebar = Instance.new("Frame")
-    Sidebar.Name = "Sidebar"
+    -- Sidebar
+    local Sidebar = Instance.new("Frame", MainContainer)
     Sidebar.Size = UDim2.new(0, 210, 1, 0)
     Sidebar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     Sidebar.ClipsDescendants = true
-    Sidebar.Parent = MainContainer
     Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 14)
     local SideStroke = Instance.new("UIStroke", Sidebar)
     SideStroke.Color = Color3.fromRGB(40, 40, 50)
     SideStroke.Thickness = 2
 
     local SideGradient = Instance.new("UIGradient", Sidebar)
-    SideGradient.Color = ColorSequence.new({
+    SideGradient.Color = windowConfig.Color or ColorSequence.new({
         ColorSequenceKeypoint.new(0.0, Color3.fromRGB(220, 20, 60)),
-        ColorSequenceKeypoint.new(0.4, Color3.fromRGB(15, 15, 35)),
         ColorSequenceKeypoint.new(1.0, Color3.fromRGB(10, 10, 120))
     })
     SideGradient.Rotation = 45
@@ -108,18 +139,16 @@ function AutoSyncUI:CreateWindow(config)
     HubTitle.Font = Enum.Font.GothamBold
     HubTitle.TextXAlignment = Enum.TextXAlignment.Left
 
-    local SideLine = Instance.new("Frame", Sidebar)
-    SideLine.Size = UDim2.new(1, -28, 0, 1)
-    SideLine.Position = UDim2.new(0, 14, 0, 72)
-    SideLine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    SideLine.BackgroundTransparency = 0.7
-    SideLine.BorderSizePixel = 0
+    -- Tag Frame (สไตล์ภาพเวอร์ชัน)
+    local TagContainer = Instance.new("Frame", Sidebar)
+    TagContainer.Name = "TagContainer"
+    TagContainer.Size = UDim2.new(0, 180, 0, 24)
+    TagContainer.Position = UDim2.new(0, 14, 0, 68)
+    TagContainer.BackgroundTransparency = 1
 
-    -- Tab Container (Scrolling)
     local TabContainer = Instance.new("ScrollingFrame", Sidebar)
-    TabContainer.Name = "TabContainer"
-    TabContainer.Size = UDim2.new(1, -20, 1, -180)
-    TabContainer.Position = UDim2.new(0, 10, 0, 80)
+    TabContainer.Size = UDim2.new(1, -20, 1, -200)
+    TabContainer.Position = UDim2.new(0, 10, 0, 100)
     TabContainer.BackgroundTransparency = 1
     TabContainer.BorderSizePixel = 0
     TabContainer.ScrollBarThickness = 2
@@ -142,7 +171,6 @@ function AutoSyncUI:CreateWindow(config)
     AvatarBox.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
     AvatarBox.Image = Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420) or ""
     Instance.new("UICorner", AvatarBox).CornerRadius = UDim.new(1, 0)
-    Instance.new("UIStroke", AvatarBox).Thickness = 1.5
 
     local ProfileDesc = Instance.new("TextLabel", ProfileCard)
     ProfileDesc.Size = UDim2.new(1, -82, 0, 28)
@@ -153,9 +181,6 @@ function AutoSyncUI:CreateWindow(config)
     ProfileDesc.Font = Enum.Font.GothamBold
     ProfileDesc.TextScaled = true
     ProfileDesc.TextXAlignment = Enum.TextXAlignment.Left
-    local DescConstraint = Instance.new("UITextSizeConstraint", ProfileDesc)
-    DescConstraint.MaxTextSize = 14
-    DescConstraint.MinTextSize = 8
 
     local MapButton = Instance.new("TextButton", ProfileCard)
     MapButton.Size = UDim2.new(1, -82, 0, 30)
@@ -166,16 +191,13 @@ function AutoSyncUI:CreateWindow(config)
     MapButton.Font = Enum.Font.GothamMedium
     MapButton.TextScaled = true
     Instance.new("UICorner", MapButton).CornerRadius = UDim.new(0, 6)
-    local MapConstraint = Instance.new("UITextSizeConstraint", MapButton)
-    MapConstraint.MaxTextSize = 12
-    MapConstraint.MinTextSize = 7
 
     task.spawn(function()
         local success, placeInfo = pcall(function() return MarketplaceService:GetProductInfo(game.PlaceId) end)
         if success and placeInfo and placeInfo.Name then MapButton.Text = placeInfo.Name else MapButton.Text = "Unknown Game" end
     end)
 
-    -- Right Main Content Panel
+    -- Main Content Area
     local MainContent = Instance.new("Frame", MainContainer)
     MainContent.Size = UDim2.new(1, -225, 1, 0)
     MainContent.Position = UDim2.new(0, 225, 0, 0)
@@ -187,13 +209,6 @@ function AutoSyncUI:CreateWindow(config)
     local MainGradient = Instance.new("UIGradient", MainContent)
     MainGradient.Color = SideGradient.Color
     MainGradient.Rotation = 45
-
-    local TopLine = Instance.new("Frame", MainContent)
-    TopLine.Size = UDim2.new(1, -30, 0, 1)
-    TopLine.Position = UDim2.new(0, 15, 0, 72)
-    TopLine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    TopLine.BackgroundTransparency = 0.7
-    TopLine.BorderSizePixel = 0
 
     local MinimizeBtn = Instance.new("TextButton", MainContent)
     MinimizeBtn.Size = UDim2.new(0, 40, 0, 32)
@@ -218,25 +233,62 @@ function AutoSyncUI:CreateWindow(config)
 
     makeDraggable(MainContainer, Sidebar)
     makeDraggable(MainContainer, MainContent)
+    makeDraggable(OpenButton, OpenButton)
 
     local uiVisible = true
     local function toggleUI()
         uiVisible = not uiVisible
         MainContainer.Visible = uiVisible
     end
-    ToggleBtn.MouseButton1Click:Connect(toggleUI)
+
+    OpenButton.MouseButton1Click:Connect(toggleUI)
     MinimizeBtn.MouseButton1Click:Connect(toggleUI)
     CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
-    UserInputService.InputBegan:Connect(function(input, gpe)
-        if not gpe and (input.KeyCode == Enum.KeyCode.RightControl or input.KeyCode == Enum.KeyCode.Insert) then toggleUI() end
-    end)
 
     local WindowObj = {}
+    local toggleKey = Enum.KeyCode.RightControl
+
+    function WindowObj:EditOpenButton(btnConfig)
+        if btnConfig.Title then OpenButton.Text = "  " .. btnConfig.Title end
+        if btnConfig.CornerRadius then OpenBtnCorner.CornerRadius = btnConfig.CornerRadius end
+        if btnConfig.StrokeThickness then OpenBtnStroke.Thickness = btnConfig.StrokeThickness end
+    end
+
+    function WindowObj:Tag(tagConfig)
+        local TagBox = Instance.new("Frame", TagContainer)
+        TagBox.Size = UDim2.new(0, 80, 0, 20)
+        TagBox.BackgroundColor3 = tagConfig.Color or Color3.fromRGB(48, 255, 106)
+        Instance.new("UICorner", TagBox).CornerRadius = UDim.new(0, tagConfig.Radius or 8)
+
+        local TagLabel = Instance.new("TextLabel", TagBox)
+        TagLabel.Size = UDim2.new(1, 0, 1, 0)
+        TagLabel.BackgroundTransparency = 1
+        TagLabel.Text = tagConfig.Title or "Tag"
+        TagLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+        TagLabel.Font = Enum.Font.GothamBold
+        TagLabel.TextSize = 11
+    end
+
+    function WindowObj:SetToggleKey(keyCode)
+        toggleKey = keyCode
+    end
+
+    function WindowObj:Dialog(dialogConfig)
+        print("Dialog Triggered:", dialogConfig.Title, dialogConfig.Content)
+    end
+
+    function WindowObj:Divider()
+        local Div = Instance.new("Frame", TabContainer)
+        Div.Size = UDim2.new(1, 0, 0, 1)
+        Div.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        Div.BackgroundTransparency = 0.8
+    end
+
     local firstTab = true
 
-    function WindowObj:Tab(config)
-        local tabTitle = config.Title or "Tab"
-        
+    function WindowObj:Tab(tabConfig)
+        local tabTitle = tabConfig.Title or "Tab"
+
         local TabBtn = Instance.new("TextButton", TabContainer)
         TabBtn.Size = UDim2.new(1, 0, 0, 34)
         TabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
@@ -278,6 +330,24 @@ function AutoSyncUI:CreateWindow(config)
 
         local TabObj = {}
 
+        function TabObj:Divider()
+            local Div = Instance.new("Frame", TabPage)
+            Div.Size = UDim2.new(1, 0, 0, 1)
+            Div.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            Div.BackgroundTransparency = 0.8
+        end
+
+        function TabObj:Section(secConfig)
+            local SecLabel = Instance.new("TextLabel", TabPage)
+            SecLabel.Size = UDim2.new(1, 0, 0, 25)
+            SecLabel.BackgroundTransparency = 1
+            SecLabel.Text = secConfig.Title or "Section"
+            SecLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+            SecLabel.Font = Enum.Font.GothamBold
+            SecLabel.TextSize = secConfig.TextSize or 15
+            SecLabel.TextXAlignment = Enum.TextXAlignment.Left
+        end
+
         function TabObj:Button(btnConfig)
             local Btn = Instance.new("TextButton", TabPage)
             Btn.Size = UDim2.new(1, 0, 0, 36)
@@ -317,8 +387,130 @@ function AutoSyncUI:CreateWindow(config)
             end)
         end
 
+        function TabObj:Slider(sliderConfig)
+            local val = sliderConfig.Value and sliderConfig.Value.Default or 50
+            local SliderFrame = Instance.new("Frame", TabPage)
+            SliderFrame.Size = UDim2.new(1, 0, 0, 45)
+            SliderFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+            Instance.new("UICorner", SliderFrame).CornerRadius = UDim.new(0, 8)
+
+            local SliderTitle = Instance.new("TextLabel", SliderFrame)
+            SliderTitle.Size = UDim2.new(1, -60, 0, 20)
+            SliderTitle.Position = UDim2.new(0, 10, 0, 5)
+            SliderTitle.BackgroundTransparency = 1
+            SliderTitle.Text = sliderConfig.Title or "Slider"
+            SliderTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+            SliderTitle.Font = Enum.Font.GothamMedium
+            SliderTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+            local SliderValue = Instance.new("TextLabel", SliderFrame)
+            SliderValue.Size = UDim2.new(0, 50, 0, 20)
+            SliderValue.Position = UDim2.new(1, -55, 0, 5)
+            SliderValue.BackgroundTransparency = 1
+            SliderValue.Text = tostring(val)
+            SliderValue.TextColor3 = Color3.fromRGB(200, 200, 200)
+
+            local SliderObj = {}
+            function SliderObj:Set(v)
+                val = v
+                SliderValue.Text = tostring(val)
+                if sliderConfig.Callback then pcall(sliderConfig.Callback, val) end
+            end
+            return SliderObj
+        end
+
+        function TabObj:Dropdown(ddConfig)
+            local DropFrame = Instance.new("TextButton", TabPage)
+            DropFrame.Size = UDim2.new(1, 0, 0, 38)
+            DropFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+            DropFrame.Text = "  " .. (ddConfig.Title or "Dropdown")
+            DropFrame.TextColor3 = Color3.fromRGB(255, 255, 255)
+            DropFrame.Font = Enum.Font.GothamMedium
+            DropFrame.TextXAlignment = Enum.TextXAlignment.Left
+            Instance.new("UICorner", DropFrame).CornerRadius = UDim.new(0, 8)
+        end
+
+        function TabObj:Input(inputConfig)
+            local InputFrame = Instance.new("Frame", TabPage)
+            InputFrame.Size = UDim2.new(1, 0, 0, 40)
+            InputFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+            Instance.new("UICorner", InputFrame).CornerRadius = UDim.new(0, 8)
+
+            local TextBox = Instance.new("TextBox", InputFrame)
+            TextBox.Size = UDim2.new(1, -20, 1, 0)
+            TextBox.Position = UDim2.new(0, 10, 0, 0)
+            TextBox.BackgroundTransparency = 1
+            TextBox.Text = inputConfig.Value or ""
+            TextBox.PlaceholderText = inputConfig.Placeholder or "Enter text..."
+            TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+            TextBox.Font = Enum.Font.GothamMedium
+            TextBox.TextXAlignment = Enum.TextXAlignment.Left
+
+            TextBox.FocusLost:Connect(function(enterPressed)
+                if enterPressed and inputConfig.Callback then pcall(inputConfig.Callback, TextBox.Text) end
+            end)
+        end
+
+        function TabObj:Keybind(keyConfig)
+            local KeyFrame = Instance.new("TextButton", TabPage)
+            KeyFrame.Size = UDim2.new(1, 0, 0, 38)
+            KeyFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+            KeyFrame.Text = "  " .. (keyConfig.Title or "Keybind") .. ": " .. (keyConfig.Value or "None")
+            KeyFrame.TextColor3 = Color3.fromRGB(255, 255, 255)
+            KeyFrame.Font = Enum.Font.GothamMedium
+            KeyFrame.TextXAlignment = Enum.TextXAlignment.Left
+            Instance.new("UICorner", KeyFrame).CornerRadius = UDim.new(0, 8)
+        end
+
+        function TabObj:Colorpicker(cpConfig)
+            local CpFrame = Instance.new("TextButton", TabPage)
+            CpFrame.Size = UDim2.new(1, 0, 0, 38)
+            CpFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+            CpFrame.Text = "  " .. (cpConfig.Title or "Colorpicker")
+            CpFrame.TextColor3 = Color3.fromRGB(255, 255, 255)
+            CpFrame.Font = Enum.Font.GothamMedium
+            CpFrame.TextXAlignment = Enum.TextXAlignment.Left
+            Instance.new("UICorner", CpFrame).CornerRadius = UDim.new(0, 8)
+        end
+
+        function TabObj:Code(codeConfig)
+            local CodeFrame = Instance.new("Frame", TabPage)
+            CodeFrame.Size = UDim2.new(1, 0, 0, 50)
+            CodeFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+            Instance.new("UICorner", CodeFrame).CornerRadius = UDim.new(0, 8)
+
+            local CodeLabel = Instance.new("TextLabel", CodeFrame)
+            CodeLabel.Size = UDim2.new(1, -20, 1, 0)
+            CodeLabel.Position = UDim2.new(0, 10, 0, 0)
+            CodeLabel.BackgroundTransparency = 1
+            CodeLabel.Text = codeConfig.Code or ""
+            CodeLabel.TextColor3 = Color3.fromRGB(100, 255, 150)
+            CodeLabel.Font = Enum.Font.Code
+            CodeLabel.TextXAlignment = Enum.TextXAlignment.Left
+        end
+
+        function TabObj:Paragraph(paraConfig)
+            local ParaFrame = Instance.new("Frame", TabPage)
+            ParaFrame.Size = UDim2.new(1, 0, 0, 50)
+            ParaFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+            Instance.new("UICorner", ParaFrame).CornerRadius = UDim.new(0, 8)
+
+            local TitleLabel = Instance.new("TextLabel", ParaFrame)
+            TitleLabel.Size = UDim2.new(1, -20, 0, 20)
+            TitleLabel.Position = UDim2.new(0, 10, 0, 5)
+            TitleLabel.BackgroundTransparency = 1
+            TitleLabel.Text = paraConfig.Title or "Paragraph"
+            TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+            TitleLabel.Font = Enum.Font.GothamBold
+            TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+        end
+
         return TabObj
     end
+
+    UserInputService.InputBegan:Connect(function(input, gpe)
+        if not gpe and input.KeyCode == toggleKey then toggleUI() end
+    end)
 
     return WindowObj
 end

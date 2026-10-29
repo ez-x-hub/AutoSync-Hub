@@ -1,4 +1,4 @@
--- AutoSyncUI Framework (Fixed Tag & Close Button Icons)
+-- AutoSyncUI Framework (Ultra Premium Open Button Edition)
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local MarketplaceService = game:GetService("MarketplaceService")
@@ -25,29 +25,68 @@ function AutoSyncUI:CreateWindow(windowConfig)
     ScreenGui.Parent = CoreGui
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-    -- Open Button
+    -- ========================================================
+    -- [อัปเกรดใหม่] ปุ่มเปิด-ปิด UI พรีเมียม (Ultra Premium Open Button)
+    -- ========================================================
     local OpenButton = Instance.new("TextButton")
     OpenButton.Name = "OpenButton"
-    OpenButton.Size = UDim2.new(0, 160, 0, 42)
+    OpenButton.Size = UDim2.new(0, 180, 0, 48)
     OpenButton.Position = UDim2.new(0.02, 0, 0.05, 0)
-    OpenButton.BackgroundColor3 = Color3.fromRGB(18, 22, 28)
-    OpenButton.Text = "  Open UI"
+    OpenButton.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
+    OpenButton.BackgroundTransparency = 0.2
+    OpenButton.Text = "  ⚡  Open Hub"
     OpenButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     OpenButton.Font = Enum.Font.GothamBold
-    OpenButton.TextSize = 14
+    OpenButton.TextSize = 15
     OpenButton.Parent = ScreenGui
 
     local OpenBtnCorner = Instance.new("UICorner", OpenButton)
-    OpenBtnCorner.CornerRadius = UDim.new(0, 16)
+    OpenBtnCorner.CornerRadius = UDim.new(0, 14)
 
+    -- ขอบเรืองแสงนีออน (UIStroke)
     local OpenBtnStroke = Instance.new("UIStroke", OpenButton)
-    OpenBtnStroke.Thickness = 2
-    OpenBtnStroke.Color = Color3.fromRGB(255, 50, 100)
+    OpenBtnStroke.Thickness = 2.5
+    OpenBtnStroke.Color = Color3.fromRGB(255, 255, 255)
+    OpenBtnStroke.Transparency = 0.3
 
-    if windowConfig.Color then
-        local Gradient = Instance.new("UIGradient", OpenBtnStroke)
-        Gradient.Color = windowConfig.Color
-    end
+    -- ไล่เฉดสีนีออนให้ขอบปุ่ม
+    local OpenBtnGradient = Instance.new("UIGradient", OpenBtnStroke)
+    OpenBtnGradient.Color = windowConfig.Color or ColorSequence.new({
+        ColorSequenceKeypoint.new(0.0, Color3.fromRGB(255, 20, 147)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 191, 255)),
+        ColorSequenceKeypoint.new(1.0, Color3.fromRGB(50, 205, 50))
+    })
+
+    -- เอฟเฟกต์แสงเงาด้านหลังปุ่ม (Glow Effect)
+    local OpenBtnGlow = Instance.new("ImageLabel", OpenButton)
+    OpenBtnGlow.Name = "Glow"
+    OpenBtnGlow.Size = UDim2.new(1, 30, 1, 30)
+    OpenBtnGlow.Position = UDim2.new(0, -15, 0, -15)
+    OpenBtnGlow.BackgroundTransparency = 1
+    OpenBtnGlow.Image = "rbxassetid://6014261993" -- เงาฟุ้งซอฟต์
+    OpenBtnGlow.ImageColor3 = Color3.fromRGB(255, 50, 150)
+    OpenBtnGlow.ImageTransparency = 0.6
+    OpenBtnGlow.ZIndex = OpenButton.ZIndex - 1
+
+    -- อนิเมชัน Hover (เวลาเอาเมาส์ชี้ปุ่มจะขยายและเรืองแสงขึ้น)
+    OpenButton.MouseEnter:Connect(function()
+        TweenService:Create(OpenButton, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+            Size = UDim2.new(0, 190, 0, 52),
+            Position = UDim2.new(OpenButton.Position.X.Scale, OpenButton.Position.X.Offset - 5, OpenButton.Position.Y.Scale, OpenButton.Position.Y.Offset - 2),
+            BackgroundTransparency = 0.05
+        }):Play()
+        TweenService:Create(OpenBtnGlow, TweenInfo.new(0.3), {ImageTransparency = 0.3}):Play()
+    end)
+
+    OpenButton.MouseLeave:Connect(function()
+        TweenService:Create(OpenButton, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+            Size = UDim2.new(0, 180, 0, 48),
+            Position = UDim2.new(0.02, 0, 0.05, 0),
+            BackgroundTransparency = 0.2
+        }):Play()
+        TweenService:Create(OpenBtnGlow, TweenInfo.new(0.3), {ImageTransparency = 0.6}):Play()
+    end)
+    -- ========================================================
 
     -- Main Container Window
     local MainContainer = Instance.new("Frame")
@@ -112,7 +151,6 @@ function AutoSyncUI:CreateWindow(windowConfig)
     HubTitle.Font = Enum.Font.GothamBold
     HubTitle.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- [จุดที่ 1 แก้ไข] Tag Container จัดขนาดพอดี ไม่ล้นกรอบ
     local TagContainer = Instance.new("Frame", Sidebar)
     TagContainer.Name = "TagContainer"
     TagContainer.Size = UDim2.new(1, -28, 0, 24)
@@ -192,7 +230,6 @@ function AutoSyncUI:CreateWindow(windowConfig)
     MinimizeBtn.Font = Enum.Font.GothamBold
     Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(0, 8)
 
-    -- [จุดที่ 2 แก้ไข] เปลี่ยนไอคอน Close เป็นตัว X แบบมาตรฐานฟอนต์ทั่วไป ไม่ให้เป็นสี่เหลี่ยม
     local CloseBtn = Instance.new("TextButton", MainContent)
     CloseBtn.Size = UDim2.new(0, 40, 0, 32)
     CloseBtn.Position = UDim2.new(1, -52, 0, 20)
@@ -229,7 +266,6 @@ function AutoSyncUI:CreateWindow(windowConfig)
         if btnConfig.StrokeThickness then OpenBtnStroke.Thickness = btnConfig.StrokeThickness end
     end
 
-    -- [จุดที่ 1 แก้ไข] ฟังก์ชัน Tag ปรับขนาดให้อัตโนมัติตามข้อความ
     function WindowObj:Tag(tagConfig)
         local TagBox = Instance.new("Frame", TagContainer)
         TagBox.Size = UDim2.new(0, 95, 0, 22)

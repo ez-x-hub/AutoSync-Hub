@@ -1,4 +1,4 @@
--- AutoSyncUI Framework (Ultra Premium Open Button Edition)
+-- AutoSyncUI Framework (Perfect WindUI Replica Edition)
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local MarketplaceService = game:GetService("MarketplaceService")
@@ -26,68 +26,56 @@ function AutoSyncUI:CreateWindow(windowConfig)
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
     -- ========================================================
-    -- [อัปเกรดใหม่] ปุ่มเปิด-ปิด UI พรีเมียม (Ultra Premium Open Button)
+    -- [อัปเกรด] ปุ่มเปิด-ปิด UI แบบมีไอคอนแยกฝั่งซ้าย-ขวา สไตล์ WindUI เป๊ะๆ
     -- ========================================================
     local OpenButton = Instance.new("TextButton")
     OpenButton.Name = "OpenButton"
-    OpenButton.Size = UDim2.new(0, 180, 0, 48)
+    OpenButton.Size = UDim2.new(0, 190, 0, 44)
     OpenButton.Position = UDim2.new(0.02, 0, 0.05, 0)
-    OpenButton.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
-    OpenButton.BackgroundTransparency = 0.2
-    OpenButton.Text = "  ⚡  Open Hub"
-    OpenButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    OpenButton.Font = Enum.Font.GothamBold
-    OpenButton.TextSize = 15
+    OpenButton.BackgroundColor3 = Color3.fromRGB(18, 22, 30)
+    OpenButton.Text = ""
+    OpenButton.AutoButtonColor = false
     OpenButton.Parent = ScreenGui
 
     local OpenBtnCorner = Instance.new("UICorner", OpenButton)
     OpenBtnCorner.CornerRadius = UDim.new(0, 14)
 
-    -- ขอบเรืองแสงนีออน (UIStroke)
     local OpenBtnStroke = Instance.new("UIStroke", OpenButton)
-    OpenBtnStroke.Thickness = 2.5
-    OpenBtnStroke.Color = Color3.fromRGB(255, 255, 255)
-    OpenBtnStroke.Transparency = 0.3
+    OpenBtnStroke.Thickness = 2
+    OpenBtnStroke.Color = Color3.fromRGB(255, 50, 100)
 
-    -- ไล่เฉดสีนีออนให้ขอบปุ่ม
-    local OpenBtnGradient = Instance.new("UIGradient", OpenBtnStroke)
-    OpenBtnGradient.Color = windowConfig.Color or ColorSequence.new({
-        ColorSequenceKeypoint.new(0.0, Color3.fromRGB(255, 20, 147)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 191, 255)),
-        ColorSequenceKeypoint.new(1.0, Color3.fromRGB(50, 205, 50))
-    })
+    if windowConfig.Color then
+        local Gradient = Instance.new("UIGradient", OpenBtnStroke)
+        Gradient.Color = windowConfig.Color
+    end
 
-    -- เอฟเฟกต์แสงเงาด้านหลังปุ่ม (Glow Effect)
-    local OpenBtnGlow = Instance.new("ImageLabel", OpenButton)
-    OpenBtnGlow.Name = "Glow"
-    OpenBtnGlow.Size = UDim2.new(1, 30, 1, 30)
-    OpenBtnGlow.Position = UDim2.new(0, -15, 0, -15)
-    OpenBtnGlow.BackgroundTransparency = 1
-    OpenBtnGlow.Image = "rbxassetid://6014261993" -- เงาฟุ้งซอฟต์
-    OpenBtnGlow.ImageColor3 = Color3.fromRGB(255, 50, 150)
-    OpenBtnGlow.ImageTransparency = 0.6
-    OpenBtnGlow.ZIndex = OpenButton.ZIndex - 1
+    -- ฝั่งซ้ายของปุ่ม (Drag Icon)
+    local DragIconBox = Instance.new("Frame", OpenButton)
+    DragIconBox.Size = UDim2.new(0, 44, 1, 0)
+    DragIconBox.BackgroundColor3 = Color3.fromRGB(25, 30, 40)
+    DragIconBox.BorderSizePixel = 0
+    Instance.new("UICorner", DragIconBox).CornerRadius = UDim.new(0, 14)
 
-    -- อนิเมชัน Hover (เวลาเอาเมาส์ชี้ปุ่มจะขยายและเรืองแสงขึ้น)
-    OpenButton.MouseEnter:Connect(function()
-        TweenService:Create(OpenButton, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-            Size = UDim2.new(0, 190, 0, 52),
-            Position = UDim2.new(OpenButton.Position.X.Scale, OpenButton.Position.X.Offset - 5, OpenButton.Position.Y.Scale, OpenButton.Position.Y.Offset - 2),
-            BackgroundTransparency = 0.05
-        }):Play()
-        TweenService:Create(OpenBtnGlow, TweenInfo.new(0.3), {ImageTransparency = 0.3}):Play()
-    end)
+    local DragLabel = Instance.new("TextLabel", DragIconBox)
+    DragLabel.Size = UDim2.new(1, 0, 1, 0)
+    DragLabel.BackgroundTransparency = 1
+    DragLabel.Text = "⠿"
+    DragLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    DragLabel.TextSize = 18
+    DragLabel.Font = Enum.Font.GothamBold
 
-    OpenButton.MouseLeave:Connect(function()
-        TweenService:Create(OpenButton, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-            Size = UDim2.new(0, 180, 0, 48),
-            Position = UDim2.new(0.02, 0, 0.05, 0),
-            BackgroundTransparency = 0.2
-        }):Play()
-        TweenService:Create(OpenBtnGlow, TweenInfo.new(0.3), {ImageTransparency = 0.6}):Play()
-    end)
+    -- ฝั่งขวาของปุ่ม (Text Title)
+    local OpenTextLabel = Instance.new("TextLabel", OpenButton)
+    OpenTextLabel.Size = UDim2.new(1, -50, 1, 0)
+    OpenTextLabel.Position = UDim2.new(0, 50, 0, 0)
+    OpenTextLabel.BackgroundTransparency = 1
+    OpenTextLabel.Text = "Open Hub"
+    OpenTextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    OpenTextLabel.Font = Enum.Font.GothamBold
+    OpenTextLabel.TextSize = 14
+    OpenTextLabel.TextXAlignment = Enum.TextXAlignment.Left
+
     -- ========================================================
-
     -- Main Container Window
     local MainContainer = Instance.new("Frame")
     MainContainer.Name = "MainContainer"
@@ -116,12 +104,13 @@ function AutoSyncUI:CreateWindow(windowConfig)
         end)
     end
 
-    -- Sidebar
+    -- Sidebar (จัดระเบียบโครงสร้างใหม่ทั้งหมดให้เป๊ะ)
     local Sidebar = Instance.new("Frame", MainContainer)
     Sidebar.Size = UDim2.new(0, 210, 1, 0)
     Sidebar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     Sidebar.ClipsDescendants = true
     Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 14)
+    
     local SideStroke = Instance.new("UIStroke", Sidebar)
     SideStroke.Color = Color3.fromRGB(40, 40, 50)
     SideStroke.Thickness = 2
@@ -133,6 +122,7 @@ function AutoSyncUI:CreateWindow(windowConfig)
     })
     SideGradient.Rotation = 45
 
+    -- macOS Dots
     for i, color in ipairs({Color3.fromRGB(255, 95, 86), Color3.fromRGB(255, 189, 46), Color3.fromRGB(39, 201, 63)}) do
         local Dot = Instance.new("Frame", Sidebar)
         Dot.Size = UDim2.new(0, 10, 0, 10)
@@ -141,25 +131,30 @@ function AutoSyncUI:CreateWindow(windowConfig)
         Instance.new("UICorner", Dot).CornerRadius = UDim.new(1, 0)
     end
 
+    -- Hub Title
     local HubTitle = Instance.new("TextLabel", Sidebar)
-    HubTitle.Size = UDim2.new(1, -24, 0, 30)
-    HubTitle.Position = UDim2.new(0, 14, 0, 35)
+    HubTitle.Name = "HubTitle"
+    HubTitle.Size = UDim2.new(1, -28, 0, 25)
+    HubTitle.Position = UDim2.new(0, 14, 0, 36)
     HubTitle.BackgroundTransparency = 1
     HubTitle.Text = hubTitle
     HubTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    HubTitle.TextSize = 18
+    HubTitle.TextSize = 17
     HubTitle.Font = Enum.Font.GothamBold
     HubTitle.TextXAlignment = Enum.TextXAlignment.Left
 
+    -- Tag Container (จัดตำแหน่งให้อยู่ใต้ Title พอดีเป๊ะ ไม่ทับซ้อน)
     local TagContainer = Instance.new("Frame", Sidebar)
     TagContainer.Name = "TagContainer"
-    TagContainer.Size = UDim2.new(1, -28, 0, 24)
-    TagContainer.Position = UDim2.new(0, 14, 0, 70)
+    TagContainer.Size = UDim2.new(1, -28, 0, 22)
+    TagContainer.Position = UDim2.new(0, 14, 0, 65)
     TagContainer.BackgroundTransparency = 1
 
+    -- Tab Container (ขยับลงมาเว้นพื้นที่ให้ Tag เรียบร้อย)
     local TabContainer = Instance.new("ScrollingFrame", Sidebar)
-    TabContainer.Size = UDim2.new(1, -20, 1, -200)
-    TabContainer.Position = UDim2.new(0, 10, 0, 105)
+    TabContainer.Name = "TabContainer"
+    TabContainer.Size = UDim2.new(1, -20, 1, -195)
+    TabContainer.Position = UDim2.new(0, 10, 0, 95)
     TabContainer.BackgroundTransparency = 1
     TabContainer.BorderSizePixel = 0
     TabContainer.ScrollBarThickness = 2
@@ -167,25 +162,26 @@ function AutoSyncUI:CreateWindow(windowConfig)
     TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
     TabListLayout.Padding = UDim.new(0, 6)
 
-    -- Profile Card
+    -- Profile Card (จัดวางไอคอนและชื่อให้อยู่กึ่งกลางสวยงาม)
     local ProfileCard = Instance.new("Frame", Sidebar)
-    ProfileCard.Size = UDim2.new(1, -20, 0, 80)
-    ProfileCard.Position = UDim2.new(0, 10, 1, -90)
+    ProfileCard.Name = "ProfileCard"
+    ProfileCard.Size = UDim2.new(1, -20, 0, 75)
+    ProfileCard.Position = UDim2.new(0, 10, 1, -85)
     ProfileCard.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     ProfileCard.BackgroundTransparency = 0.5
     Instance.new("UICorner", ProfileCard).CornerRadius = UDim.new(0, 10)
     Instance.new("UIStroke", ProfileCard).Color = Color3.fromRGB(255, 255, 255)
 
     local AvatarBox = Instance.new("ImageLabel", ProfileCard)
-    AvatarBox.Size = UDim2.new(0, 64, 0, 64)
+    AvatarBox.Size = UDim2.new(0, 58, 0, 58)
     AvatarBox.Position = UDim2.new(0, 8, 0, 8)
     AvatarBox.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
     AvatarBox.Image = Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420) or ""
     Instance.new("UICorner", AvatarBox).CornerRadius = UDim.new(1, 0)
 
     local ProfileDesc = Instance.new("TextLabel", ProfileCard)
-    ProfileDesc.Size = UDim2.new(1, -82, 0, 28)
-    ProfileDesc.Position = UDim2.new(0, 78, 0, 10)
+    ProfileDesc.Size = UDim2.new(1, -74, 0, 24)
+    ProfileDesc.Position = UDim2.new(0, 72, 0, 10)
     ProfileDesc.BackgroundTransparency = 1
     ProfileDesc.Text = LocalPlayer.DisplayName
     ProfileDesc.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -194,8 +190,8 @@ function AutoSyncUI:CreateWindow(windowConfig)
     ProfileDesc.TextXAlignment = Enum.TextXAlignment.Left
 
     local MapButton = Instance.new("TextButton", ProfileCard)
-    MapButton.Size = UDim2.new(1, -82, 0, 30)
-    MapButton.Position = UDim2.new(0, 78, 0, 42)
+    MapButton.Size = UDim2.new(1, -74, 0, 26)
+    MapButton.Position = UDim2.new(0, 72, 0, 38)
     MapButton.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
     MapButton.Text = "Loading Map..."
     MapButton.TextColor3 = Color3.fromRGB(150, 200, 255)
@@ -222,8 +218,8 @@ function AutoSyncUI:CreateWindow(windowConfig)
     MainGradient.Rotation = 45
 
     local MinimizeBtn = Instance.new("TextButton", MainContent)
-    MinimizeBtn.Size = UDim2.new(0, 40, 0, 32)
-    MinimizeBtn.Position = UDim2.new(1, -100, 0, 20)
+    MinimizeBtn.Size = UDim2.new(0, 38, 0, 30)
+    MinimizeBtn.Position = UDim2.new(1, -95, 0, 16)
     MinimizeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
     MinimizeBtn.Text = "—"
     MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -231,12 +227,12 @@ function AutoSyncUI:CreateWindow(windowConfig)
     Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(0, 8)
 
     local CloseBtn = Instance.new("TextButton", MainContent)
-    CloseBtn.Size = UDim2.new(0, 40, 0, 32)
-    CloseBtn.Position = UDim2.new(1, -52, 0, 20)
+    CloseBtn.Size = UDim2.new(0, 38, 0, 30)
+    CloseBtn.Position = UDim2.new(1, -50, 0, 16)
     CloseBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
     CloseBtn.Text = "X"
     CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    CloseBtn.TextSize = 16
+    CloseBtn.TextSize = 15
     CloseBtn.Font = Enum.Font.GothamBold
     Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
 
@@ -261,16 +257,16 @@ function AutoSyncUI:CreateWindow(windowConfig)
     local toggleKey = Enum.KeyCode.RightControl
 
     function WindowObj:EditOpenButton(btnConfig)
-        if btnConfig.Title then OpenButton.Text = "  " .. btnConfig.Title end
+        if btnConfig.Title then OpenTextLabel.Text = btnConfig.Title end
         if btnConfig.CornerRadius then OpenBtnCorner.CornerRadius = btnConfig.CornerRadius end
         if btnConfig.StrokeThickness then OpenBtnStroke.Thickness = btnConfig.StrokeThickness end
     end
 
     function WindowObj:Tag(tagConfig)
         local TagBox = Instance.new("Frame", TagContainer)
-        TagBox.Size = UDim2.new(0, 95, 0, 22)
+        TagBox.Size = UDim2.new(0, 85, 0, 20)
         TagBox.BackgroundColor3 = tagConfig.Color or Color3.fromRGB(48, 255, 106)
-        Instance.new("UICorner", TagBox).CornerRadius = UDim.new(0, tagConfig.Radius or 8)
+        Instance.new("UICorner", TagBox).CornerRadius = UDim.new(0, tagConfig.Radius or 6)
 
         local TagLabel = Instance.new("TextLabel", TagBox)
         TagLabel.Size = UDim2.new(1, 0, 1, 0)
@@ -278,7 +274,7 @@ function AutoSyncUI:CreateWindow(windowConfig)
         TagLabel.Text = tagConfig.Title or "Tag"
         TagLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
         TagLabel.Font = Enum.Font.GothamBold
-        TagLabel.TextSize = 12
+        TagLabel.TextSize = 11
     end
 
     function WindowObj:SetToggleKey(keyCode)
@@ -308,8 +304,8 @@ function AutoSyncUI:CreateWindow(windowConfig)
         Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 8)
 
         local TabPage = Instance.new("ScrollingFrame", PagesFolder)
-        TabPage.Size = UDim2.new(1, -30, 1, -90)
-        TabPage.Position = UDim2.new(0, 15, 0, 80)
+        TabPage.Size = UDim2.new(1, -30, 1, -80)
+        TabPage.Position = UDim2.new(0, 15, 0, 70)
         TabPage.BackgroundTransparency = 1
         TabPage.BorderSizePixel = 0
         TabPage.ScrollBarThickness = 4
